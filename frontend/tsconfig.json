@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": ["ESNext", "DOM"],
+    "declaration": false,
+    "sourceMap": true,
+    "strict": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "jsx",
+    "paths": {
+      "jsx/*": ["./jsx/*"]
+    },
+    "types": [
+      "bun"
+    ],
+    "rootDir": ".",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*", "jsx"]
+}

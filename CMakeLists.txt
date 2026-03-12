@@ -30,3 +30,22 @@ target_link_libraries(luna-shell PRIVATE
     Qt6::Qml
     Qt6::WaylandCompositor
 )
+
+# --------------------------------------------------
+# optional TypeScript/JSX frontend build (bun)
+# --------------------------------------------------
+
+# A custom target which invokes bun to install dependencies and build the
+# TypeScript/JSX sources. The generated bundle.js ends up in
+# frontend/build/ts/bundle.js, which can be imported from QML via
+# Qt.include("qrc:/qml/bundle.js").
+add_custom_target(ts_frontend_install_only
+    COMMAND cd ${CMAKE_SOURCE_DIR}/frontend && bun install
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/frontend
+    COMMENT "Installing frontend dependencies with bun (no TS/JSX build)"
+)
+
+# Do not run a bundling/tsc step at CMake time — the frontend runs TSX natively
+# with bun during development. The install-only target is available if you
+# want CMake to ensure node deps are present, but it is not required for
+# building the C++/QML application and does not block the build.
