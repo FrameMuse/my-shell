@@ -1,19 +1,17 @@
-namespace Reactivity;
+namespace my_shell.Reactivity;
 
-public class EventSignal<T>
+public class EventSignal<T>(T initialValue)
 {
     protected readonly Messager<T> messager = new();
-    protected T value;
+    protected T value = initialValue;
 
-    public T Value => value;
-    public EventSignal(T initialValue) => value = initialValue;
+    public T Get() => value;
 
     public void Set(T newValue)
     {
         value = newValue;
         messager.Dispatch(value);
     }
-
     public void Set(Func<T, T> updateFunc)
     {
         value = updateFunc(value);
@@ -21,4 +19,5 @@ public class EventSignal<T>
     }
 
     public IDisposable Subscribe(Action<T> next) => messager.Subscribe(next);
+    public IDisposable Subscribe(Action next) => messager.Subscribe(_ => next());
 }

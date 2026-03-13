@@ -16,15 +16,15 @@ var result2 = isDivisibleByFour(9); // false
 
 
 
-XUI MyUIComponent()
-{
-    // Create a new UI component
-    var component = new XUI();
+// XUI MyUIComponent()
+// {
+//     // Create a new UI component
+//     var component = new XUI();
 
-    // Set properties and add child elements
-    component.SetProperty("width", 200);
-    component.SetProperty("height", 100);
-    component.AddChild(new XUILabel("Hello, World!"));
+//     // Set properties and add child elements
+//     component.SetProperty("width", 200);
+//     component.SetProperty("height", 100);
+//     component.AddChild(new XUILabel("Hello, World!"));
 
-    return component;
-}
+//     return component;
+// }

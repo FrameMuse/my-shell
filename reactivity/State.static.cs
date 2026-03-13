@@ -1,17 +1,31 @@
-namespace Reactivity;
+namespace my_shell.Reactivity;
+
+delegate U ParamsFunc<T, U>(params T[] args);
 
 public static class State
 {
     /// <summary>
     /// Combines multiple signals into one computed state.
     /// </summary>
-    public static State<U> Combine<T1, T2, U>(Signal<T1> s1, Signal<T2> s2, Func<T1, T2, U> combiner)
-    {
-        var result = new State<U>(combiner(s1.Get(), s2.Get()));
-        s1.Subscribe(_ => result.Set(combiner(s1.Get(), s2.Get())));
-        s2.Subscribe(_ => result.Set(combiner(s1.Get(), s2.Get())));
-        return result;
-    }
+    // public static State<U> Combine<T, U>(ParamsFunc<T, U> predicate, params State<T>[] states)
+    // {
+    //     // 1. Get initial values using 'dynamic' to access .Value property
+    //     var values = states.Select(s => s.Get()).ToArray();
+    //     // 2. Create the computed state
+    //     var computed = new State<U>(predicate(values));
+    //     // 3. Subscribe to each state
+    //     for (int i = 0; i < states.Length; i++)
+    //     {
+    //         int index = i;
+    //         states.ElementAt(i).Subscribe(new Action<T>(val =>
+    //         {
+    //             values[index] = val;
+    //             computed.Set(predicate(values));
+    //         }));
+    //     }
+
+    //     return computed;
+    // }
 
     /// <summary>
     /// C# version of template literal formatting.
@@ -19,7 +33,8 @@ public static class State
     /// </summary>
     public static State<string> F(string format, params object[] args)
     {
-        Func<string> formatter = () => {
+        Func<string> formatter = () =>
+        {
             var unwrapped = new object[args.Length];
             for (int i = 0; i < args.Length; i++)
                 unwrapped[i] = args[i] is Signal<object> s ? s.Get() : args[i];
@@ -32,5 +47,12 @@ public static class State
             if (arg is Signal<object> s) s.Subscribe(_ => state.Set(formatter()));
         }
         return state;
+    }
+
+    public static State<T> Get<T>(T value)
+    {
+        if (value is State<T> state) return state.Get();
+
+        return value;
     }
 }
