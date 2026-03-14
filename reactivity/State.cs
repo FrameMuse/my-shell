@@ -4,13 +4,7 @@ public class State<T>(T initialValue) : EventSignal<T>(initialValue)
 {
 	protected readonly Lifecycle lifecycle = new();
 
-	public class Recyclable : IDisposable
-	{
-		public void Dispose() {}
-		protected void Renew() {}
-	}
-
-	public Recyclable Subscribe(Action<T> callback) => lifecycle.Adopt(base.Subscribe(callback));
+	public new Recyclable Subscribe(Action<T> callback) => lifecycle.Adopt(base.Subscribe(callback));
 	public Recyclable SubscribeAndInvoke(Action<T> callback)
 	{
 		callback(value);
@@ -21,21 +15,7 @@ public class State<T>(T initialValue) : EventSignal<T>(initialValue)
 
 	// Creates Recyclable State<U> that updates whenever this State<T> changes,
 	// but only when there is at least one active subscription to the new State<U>.
-	public State<U> To<U>()
-	{
-		var stateFork = new State<U>((U)value);
-		stateFork.lifecycle.Adopt(
-			() => Subscribe(value =>
-			{
-				var newValue = (U)value;
-				if (Equals(newValue, stateFork.value)) return;
-
-				stateFork.Set(newValue);
-			})
-		);
-
-		return stateFork;
-	}
+	public State<U> To<U>() => To(_ => default(U)!);
 	public State<U> To<U>(Func<T, U> predicate)
 	{
 		var stateFork = new State<U>(predicate(value));
@@ -86,8 +66,11 @@ public class Lifecycle : IDisposable
 	private readonly List<Func<IDisposable>> actions = [];
 	private readonly List<IDisposable> disposables = [];
 
-	public void Adopt(Func<IDisposable> disposeAction) => actions.Add(disposeAction);
-	public void Adopt(IDisposable disposable) => actions.Add(() => disposable);
+	public Recyclable Adopt(Func<IDisposable> disposeAction) {
+		actions.Add(disposeAction);
+		return new Recyclable();
+	}
+	public Recyclable Adopt(IDisposable disposable) => actions.Add(() => disposable);
 
 	public void Enter()
 	{
@@ -102,14 +85,13 @@ public class Lifecycle : IDisposable
 		foreach (var disposable in disposables) disposable.Dispose();
 		disposables.Clear();
 	}
-
 	public void Dispose()
 	{
 		foreach (var dispose in actions) dispose();
 		actions.Clear();
 	}
 
-	IDisposable asd()
+	public static void __TEST__()
 	{
 		State<int> state = 5;
 		State<int> otherState = 10;
@@ -118,7 +100,6 @@ public class Lifecycle : IDisposable
 		state.Sets(otherState);
 		state.To<string>();
 		state.To(x => x * 2);
-
 
 		if (state > 3)
 		{
@@ -132,4 +113,22 @@ public class Lifecycle : IDisposable
 		state = 10; // Console: Value changed: 10, Doubled value: 20.
 		state += 5;
 	}
+}
+// A suspendable subscription that can be renewed.
+public class Recyclable : IDisposable
+{
+	private bool disposed = false;
+	// Destroys the subscription and prevents it from being renewed.
+	public void Dispose()
+	{
+		Suspend();
+		disposed = true;
+	}
+
+	protected void Renew()
+	{
+		if (disposed) return;
+		
+	}
+	protected void Suspend() {}
 }

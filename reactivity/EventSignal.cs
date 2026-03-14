@@ -20,4 +20,7 @@ public class EventSignal<T>(T initialValue)
 
     public IDisposable Subscribe(Action<T> next) => messager.Subscribe(next);
     public IDisposable Subscribe(Action next) => messager.Subscribe(_ => next());
+
+    protected virtual void OnEnter() {}
+    protected virtual void OnExit() {}
 }
